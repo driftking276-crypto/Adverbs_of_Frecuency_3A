@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Chronicles of Frequency: Anti-Cheat Exam Edition</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0a0d18;
+      --bg-card: #14182e;
+      --primary: #00f0ff;
+      --secondary: #ff0077;
+      --accent: #ffe600;
+      --success: #00ff88;
+      --danger: #ff3366;
+      --warning: #ff9900;
+      --text-main: #f0f4fc;
+      --text-muted: #8c9bb5;
+      --pixel-font: 'Press Start 2P', -apple-system, monospace;
+      --ui-font: 'Rajdhani', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 15%, #181d3d 0%, var(--bg-dark) 100%);
+      color: var(--text-main);
+      font-family: var(--ui-font);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 10px) env(safe-area-inset-bottom, 15px) env(safe-area-inset-left, 10px);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(rgba(18, 16, 38, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    .game-viewport {
+      width: 100%;
+      max-width: 900px;
+      background: var(--bg-card);
+      border: 2px solid #283260;
+      border-radius: 18px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 240, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin: auto 0;
+      position: relative;
+    }
+
+    /* PANTALLA DE INGRESO DEL ESTUDIANTE */
+    .screen-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      text-align: center;
+      gap: 18px;
+      min-height: 480px;
+    }
+
+    .form-card {
+      background: #0d1124;
+      border: 2px solid #293466;
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    }
+
+    .input-field {
+      width: 100%;
+      background: #181f3d;
+      border: 2px solid #33427d;
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #ffffff;
+      font-family: var(--ui-font);
+      font-size: 1.15rem;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--primary);
+    }
+
+    .anti-cheat-notice {
+      background: rgba(255, 153, 0, 0.1);
+      border: 1px solid var(--warning);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.95rem;
+      color: #ffd899;
+      text-align: left;
+      line-height: 1.4;
+    }
+
+    /* HUD SUPERIOR */
+    .hud-bar {
+      background: rgba(10, 13, 24, 0.95);
+      border-bottom: 2px solid #232c54;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .hud-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .student-pill {
+      background: #182042;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hearts {
+      display: flex;
+      gap: 3px;
+      font-size: 1.25rem;
+    }
+
+    .score-badge {
+      color: var(--accent);
+      font-family: var(--pixel-font);
+      font-size: 0.8rem;
+    }
+
+    .combo-badge {
+      background: linear-gradient(45deg, #ff0077, #ff7700);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      animation: pulse 1s infinite alternate;
+    }
+
+    .btn-hud {
+      background: #1c2345;
+      border: 1px solid #36447c;
+      color: var(--primary);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-family: var(--ui-font);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      touch-action: manipulation;
+    }
+
+    .btn-hud:active {
+      transform: scale(0.95);
+      background: var(--primary);
+      color: #0c0f1d;
+    }
+
+    /* BARRA DE PROGRESO */
+    .quest-progress-wrap {
+      width: 100%;
+      background: #0c1021;
+      padding: 8px 16px;
+      border-bottom: 1px solid #1a2245;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background: #151b36;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #283363;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 2%;
+      background: linear-gradient(90deg, #00f0ff, #00ff88);
+      border-radius: 8px;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 8px #00ff88;
+    }
+
+    /* ARENA DE COMBATE */
+    .battle-arena {
+      padding: 12px 16px;
+      background: linear-gradient(180deg, #141933 0%, #0c1021 100%);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-bottom: 2px solid #222a52;
+      min-height: 120px;
+    }
+
+    .combatant {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .entity-avatar {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #181e3d;
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+    }
+
+    .enemy-avatar {
+      border-color: var(--secondary);
+      box-shadow: 0 0 12px rgba(255, 0, 119, 0.4);
+      background: #231229;
+    }
+
+    .entity-avatar svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    .entity-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-align: center;
+      max-width: 120px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hp-bar-mini {
+      width: 80px;
+      height: 6px;
+      background: #0f1326;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid #303c6e;
+    }
+
+    .hp-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--success);
+      transition: width 0.3s;
+    }
+
+    .enemy-hp { background: var(--danger); }
+    .vs-emblem { font-family: var(--pixel-font); font-size: 0.8rem; color: var(--accent); }
+
+    /* PANEL DEL EJERCICIO */
+    .question-panel {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 270px;
+    }
+
+    .stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 2px 10px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .boss-pill {
+      background: rgba(255, 0, 119, 0.2);
+      border-color: var(--secondary);
+      color: #ff5599;
+    }
+
+    .question-prompt {
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #ffffff;
+    }
+
+    .prompt-highlight {
+      color: var(--accent);
+      background: rgba(255, 230, 0, 0.12);
+      padding: 1px 6px;
+      border-radius: 4px;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .rule-instruction {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    /* TIPOS DE INTERACCIÓN */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .options-grid { grid-template-columns: 1fr; }
+    }
+
+    .btn-option {
+      background: #1b2140;
+      border: 2px solid #2c3666;
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: #ffffff;
+      font-family: var(--ui-font);
+      font-size: 1.15rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      touch-action: manipulation;
+      transition: transform 0.1s, background 0.15s;
+    }
+
+    .btn-option:active:not(:disabled) {
+      transform: scale(0.98);
+      background: #283363;
+    }
+
+    .key-badge {
+      background: #0d1124;
+      color: var(--primary);
+      font-family: var(--pixel-font);
+      font-size: 0.7rem;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      border: 1px solid #2e3a6c;
+      flex-shrink: 0;
+    }
+
+    .word-scramble-area {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sentence-slots {
+      min-height: 55px;
+      background: #0c1021;
+      border: 2px dashed #303c6e;
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .word-chip {
+      background: linear-gradient(135deg, #1f274c, #161b36);
+      border: 2px solid #36447c;
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .word-chip:active { transform: scale(0.95); }
+
+    .word-chip.in-slot {
+      background: linear-gradient(135deg, #004d66, #002d3d);
+      border-color: var(--primary);
+      color: #c4f5ff;
+    }
+
+    .word-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 40px;
+    }
+
+    .scramble-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+    .btn-action {
+      background: #252e57;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: var(--ui-font);
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .btn-action.primary {
+      background: var(--primary);
+      color: #0c0f1d;
+    }
+
+    .btn-action:active { transform: scale(0.96); }
+
+    .binary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-binary {
+      padding: 16px 10px;
+      border-radius: 12px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      border: 3px solid;
+      touch-action: manipulation;
+    }
+
+    .btn-true { background: rgba(0, 255, 136, 0.12); border-color: var(--success); color: var(--success); }
+    .btn-false { background: rgba(255, 51, 102, 0.12); border-color: var(--danger); color: var(--danger); }
+    .btn-binary:active { transform: scale(0.97); }
+
+    /* FEEDBACK BANNER */
+    .feedback-banner {
+      display: none;
+      margin-top: 10px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      animation: popIn 0.25s ease-out;
+    }
+
+    .feedback-correct { background: rgba(0, 255, 136, 0.15); border: 2px solid var(--success); }
+    .feedback-wrong { background: rgba(255, 51, 102, 0.15); border: 2px solid var(--danger); }
+
+    .feedback-title {
+      font-family: var(--pixel-font);
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .feedback-correct .feedback-title { color: var(--success); }
+    .feedback-wrong .feedback-title { color: var(--danger); }
+
+    .feedback-rule-pill {
+      display: inline-block;
+      background: rgba(255, 230, 0, 0.15);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .feedback-text { font-size: 1.05rem; line-height: 1.35; color: #e4eafc; }
+
+    .btn-next-quest {
+      margin-top: 12px;
+      background: linear-gradient(90deg, #00f0ff, #00aaff);
+      color: #0c0f1d;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-family: var(--ui-font);
+      font-weight: 800;
+      font-size: 1.15rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      touch-action: manipulation;
+    }
+
+    /* PANTALLA DE BLOQUEO Y SEGURIDAD */
+    .lockout-box {
+      border: 3px solid var(--danger);
+      background: rgba(255, 51, 102, 0.08);
+      border-radius: 16px;
+      padding: 25px;
+      max-width: 500px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .pin-input {
+      letter-spacing: 6px;
+      font-family: var(--pixel-font);
+      text-align: center;
+      font-size: 1.4rem;
+    }
+
+    /* PANTALLA FINAL Y ENVÍO DE REPORTE */
+    .victory-screen {
+      display: none;
+      padding: 30px 20px;
+      text-align: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .rank-badge {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #ff0077, #7700ff);
+      border: 2px solid #ff99cc;
+      border-radius: 16px;
+      font-family: var(--pixel-font);
+      font-size: 1.2rem;
+      color: white;
+    }
+
+    .report-status-box {
+      background: #0d1226;
+      border: 1px solid #2a3769;
+      border-radius: 10px;
+      padding: 12px 20px;
+      width: 100%;
+      max-width: 480px;
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    /* MODALES */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(6, 8, 17, 0.88);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 15px;
+    }
+
+    .modal-window {
+      background: var(--bg-card);
+      border: 2px solid #283363;
+      border-radius: 16px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #242d54;
+      padding-bottom: 10px;
+    }
+
+    .modal-title { font-family: var(--pixel-font); font-size: 0.95rem; color: var(--primary); }
+    .btn-close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.8rem; cursor: pointer; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.05); } }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+  </style>
+</head>
+<body>
+
+  <div class="game-viewport">
+
+    <!-- 1. PANTALLA DE INGRESO DEL ESTUDIANTE -->
+    <div class="screen-overlay" id="registrationScreen">
+      <h1 style="font-family: var(--pixel-font); font-size: 1.3rem; color: var(--primary);">
+        ⚔️ CHRONICLES OF FREQUENCY
+      </h1>
+      <p style="color: var(--text-muted); font-size: 1.05rem;">
+        Examen Evaluativo Interactivo de Adverbios de Frecuencia (50 Misiones)
+      </p>
+
+      <div class="form-card">
+        <label style="text-align: left; font-weight: 700; color: var(--text-main);">
+          👤 Nombre Completo del Estudiante:
+        </label>
+        <input type="text" id="inputStudentName" class="input-field" placeholder="Ej. Carlos Mendoza Ramos" autocomplete="off">
+
+        <label style="text-align: left; font-weight: 700; color: var(--text-main);">
+          🏫 Grado / Curso / Sección:
+        </label>
+        <input type="text" id="inputStudentGrade" class="input-field" placeholder="Ej. 3ro B - Secundaria" autocomplete="off">
+
+        <div class="anti-cheat-notice">
+          ⚠️ <strong>REGLAMENTO ANTI-COPIA:</strong><br>
+          • Está prohibido cambiar de pestaña o salir del navegador (cada intento será reportado al profesor).<br>
+          • Clic derecho y copiar/pegar están bloqueados.<br>
+          • Al finalizar, la prueba se bloqueará de forma permanente hasta que el profesor ingrese el PIN de reinicio.
+        </div>
+
+        <button class="btn-action primary" id="btnStartExam" style="font-size: 1.25rem; padding: 14px;">
+          INICIAR EVALUACIÓN ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. PANTALLA DE BLOQUEO POR INTENTO PREVIO CON PIN DOCENTE -->
+    <div class="screen-overlay" id="lockoutScreen" style="display: none;">
+      <div class="lockout-box">
+        <div style="font-size: 3rem;">🔒</div>
+        <h2 style="font-family: var(--pixel-font); color: var(--danger); font-size: 1.2rem;">
+          EVALUACIÓN BLOQUEADA
+        </h2>
+        <p style="color: #e5ebfc; font-size: 1.05rem; line-height: 1.4;" id="lockoutInfoText">
+          Esta prueba ya fue rendida en este dispositivo y su reporte ha sido archivado.
+        </p>
+
+        <div style="background: #11152a; padding: 14px; border-radius: 8px; border: 1px dashed #3a477d;">
+          <label style="font-weight: 700; color: var(--accent); display: block; margin-bottom: 8px;">
+            🔑 PIN de Desbloqueo del Profesor:
+          </label>
+          <input type="password" id="inputTeacherPin" class="input-field pin-input" maxlength="6" placeholder="••••">
+        </div>
+
+        <button class="btn-action" id="btnUnblockPin" style="background: var(--danger); color: white;">
+          DESBLOQUEAR EVALUACIÓN
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. INTERFAZ DE JUEGO HUD -->
+    <div id="gamePlayContainer" style="display: none; flex-direction: column; width: 100%;">
+      
+      <header class="hud-bar">
+        <div class="hud-stat">
+          <span class="student-pill" id="hudStudentName">Estudiante</span>
+          <div class="hearts" id="heartsContainer">
+            <span class="heart-icon">❤️</span>
+            <span class="heart-icon">❤️</span>
+            <span class="heart-icon">❤️</span>
+          </div>
+        </div>
+
+        <div class="hud-stat">
+          <span class="score-badge" id="scoreDisplay">SCORE: 0000</span>
+        </div>
+
+        <div class="hud-stat" id="comboContainer" style="display: none;">
+          <span class="combo-badge" id="comboDisplay">COMBO x2 🔥</span>
+        </div>
+
+        <div class="hud-controls">
+          <button class="btn-hud" id="btnSoundToggle" title="Audio">
+            <span id="soundIcon">🔊</span>
+          </button>
+          <button class="btn-hud" id="btnOpenCodex" title="Códice">
+            📖 Códice
+          </button>
+        </div>
+      </header>
+
+      <section class="quest-progress-wrap">
+        <div class="progress-meta">
+          <span id="stageLabel">MUNDO 1: EL ESPECTRO DEL TIEMPO</span>
+          <span id="questCounter">Nivel 1 / 50</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </section>
+
+      <section class="battle-arena" id="arenaSection">
+        <div class="combatant">
+          <div class="entity-avatar" id="playerAvatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2">
+              <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/>
+              <path d="M12 7v10M8 11h8"/>
+            </svg>
+          </div>
+          <div class="combatant-info">
+            <div class="entity-name" id="heroDisplayName" style="color: var(--primary);">Hero</div>
+            <div class="hp-bar-mini"><div class="hp-bar-fill" id="playerHpBar"></div></div>
+          </div>
+        </div>
+
+        <div class="vs-emblem">VS</div>
+
+        <div class="combatant">
+          <div class="entity-avatar enemy-avatar" id="enemyAvatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ff0077" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M9 10h.01M15 10h.01M9 15c1.5 2 4.5 2 6 0"/>
+            </svg>
+          </div>
+          <div class="combatant-info">
+            <div class="entity-name" id="enemyName" style="color: var(--secondary);">Chrono Sprite</div>
+            <div class="hp-bar-mini"><div class="hp-bar-fill enemy-hp" id="enemyHpBar"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <main class="question-panel" id="questionArea">
+        <div>
+          <span class="stage-pill" id="questionTypeBadge">⚔️ HECHIZO DE SINTAXIS</span>
+        </div>
+
+        <h2 class="question-prompt" id="questionPrompt">Cargando desafío...</h2>
+        <p class="rule-instruction" id="questionInstruction">Elige la opción correcta o reordena los bloques.</p>
+
+        <div id="interactiveZone"></div>
+
+        <div class="feedback-banner" id="feedbackBanner">
+          <div class="feedback-title" id="feedbackTitle">¡IMPACTO CRÍTICO!</div>
+          <div class="feedback-rule-pill" id="feedbackRulePill">REGLA GRAMATICAL</div>
+          <p class="feedback-text" id="feedbackExplanation"></p>
+          <button class="btn-next-quest" id="btnNextQuest">
+            <span>SIGUIENTE NIVEL ➔</span>
+          </button>
+        </div>
+      </main>
+
+    </div>
+
+    <!-- 4. PANTALLA DE REPORTE FINAL Y BLOQUEO -->
+    <section class="victory-screen" id="victoryScreen">
+      <h1 style="font-family: var(--pixel-font); font-size: 1.4rem; color: var(--accent);">
+        👑 EVALUACIÓN CONCLUIDA
+      </h1>
+      <p style="font-size: 1.15rem; color: var(--text-muted);" id="finalStudentGreeting">
+        Excelente esfuerzo. Tu prueba ha finalizado.
+      </p>
+
+      <div class="rank-badge" id="finalRankBadge">RANGO S+: MAESTRO DEL TIEMPO</div>
+      
+      <div style="font-size: 1.25rem; font-weight: 700; color: var(--accent);" id="finalScoreDisplay">
+        Puntuación: 0000 pts
+      </div>
+
+      <div class="report-status-box" id="reportStatusBox">
+        ⏳ Conectando con Web3Forms para enviar el reporte al profesor...
+      </div>
+
+      <p style="color: var(--danger); font-weight: 700; font-size: 0.95rem; max-width: 500px;">
+        🔒 La evaluación se encuentra bloqueada en este equipo. Para rendirla de nuevo, el profesor debe ingresar el PIN 2210.
+      </p>
+
+      <button class="btn-action" style="background:#20284d; margin-top: 10px;" onclick="location.reload()">
+        SALIR Y VERIFICAR BLOQUEO
+      </button>
+    </section>
+
+  </div>
+
+  <!-- MODAL: CÓDICE GRAMATICAL -->
+  <div class="modal-overlay" id="modalCodex">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title">📖 CÓDICE SAGRADO DE LA FRECUENCIA</h3>
+        <button class="btn-close-modal" onclick="game.closeModals()">&times;</button>
+      </div>
+      <div>
+        <p style="color: var(--text-muted); margin-bottom: 10px;">Consulta las reglas y porcentajes de frecuencia en cualquier momento:</p>
+        <table style="width:100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.95rem;">
+          <tr style="background:#0f1326; color:var(--accent);"><th style="padding:6px; border:1px solid #283363;">Adverb</th><th style="padding:6px; border:1px solid #283363;">Significado</th><th style="padding:6px; border:1px solid #283363;">Frecuencia</th></tr>
+          <tr><td style="padding:6px; border:1px solid #283363;"><strong>Always</strong></td><td style="padding:6px; border:1px solid #283363;">Siempre</td><td style="padding:6px; border:1px solid #283363;">100%</td></tr>
+          <tr><td style="padding:6px; border:1px solid #283363;"><strong>Usually / Normally</strong></td><td style="padding:6px; border:1px solid #283363;">Usualmente</td><td style="padding:6px; border:1px solid #283363;">90%</td></tr>
+          <tr><td style="padding:6px; border:1px solid #283363;"><strong>Often / Frequently</strong></td><td style="padding:6px; border:1px solid #283363;">A menudo</td><td style="padding:6px; border:1px solid #283363;">70%</td></tr>
+          <tr><td style="padding:6px; border:1px solid #283363;"><strong>Sometimes</strong></td><td style="padding:6px; border:1px solid #283363;">A veces</td><td style="padding:6px; border:1px solid #283363;">50%</td></tr>
+          <tr><td style="padding:6px; border:1px solid #283363;"><strong>Occasionally</strong></td><td style="padding:6px; border:1px solid #283363;">De vez en cuando</td><td style="padding:6px; border:1px solid #283363;">30%</td></tr>
+          <tr><td style="padding:6px; border:1px solid #283363;"><strong>Seldom / Rarely</strong></td><td style="padding:6px; border:1px solid #283363;">Rara vez</td><td style="padding:6px; border:1px solid #283363;">10%</td></tr>
+          <tr><td style="padding:6px; border:1px solid #283363;"><strong>Hardly ever</strong></td><td style="padding:6px; border:1px solid #283363;">Casi nunca</td><td style="padding:6px; border:1px solid #283363;">5%</td></tr>
+          <tr><td style="padding:6px; border:1px solid #283363;"><strong>Never</strong></td><td style="padding:6px; border:1px solid #283363;">Nunca</td><td style="padding:6px; border:1px solid #283363;">0%</td></tr>
+        </table>
+        <div style="background:#0e1224; border-left:4px solid var(--accent); padding:10px; border-radius:4px; margin-bottom:8px;">
+          <strong>Regla 1:</strong> Sujeto + <code>[ADVERBIO]</code> + Verbo Principal (<em>She always drinks tea</em>).
+        </div>
+        <div style="background:#0e1224; border-left:4px solid var(--accent); padding:10px; border-radius:4px; margin-bottom:8px;">
+          <strong>Regla 2:</strong> Sujeto + <code>[TO BE]</code> + <code>[ADVERBIO]</code> (<em>He is never late</em>).
+        </div>
+        <div style="background:#0e1224; border-left:4px solid var(--accent); padding:10px; border-radius:4px;">
+          <strong>Regla 3:</strong> Sujeto + <code>[Modal / Aux]</code> + <code>[ADVERBIO]</code> + Verbo (<em>You can never tell</em>).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       CONFIGURACIÓN MAESTRA DEL PROFESOR
+       ========================================================= */
+    // 1. Ingresa aquí tu clave de Web3Forms (obtenida gratis en https://web3forms.com):
+    const WEB3FORMS_ACCESS_KEY = "54980130-331b-4268-940c-6ab5640a2f40"; 
+
+    // 2. PIN oficial de desbloqueo exigido:
+    const TEACHER_UNLOCK_PIN = "2210";
+
+    /* =========================================================
+       MÓDULO ANTI-COPIA Y AUDITORÍA DE INFRACCIONES
+       ========================================================= */
+    class AntiCheatSystem {
+      constructor(onViolationCallback) {
+        this.violationsCount = 0;
+        this.onViolation = onViolationCallback;
+        this.active = false;
+        this.init();
+      }
+
+      start() {
+        this.active = true;
+      }
+
+      stop() {
+        this.active = false;
+      }
+
+      init() {
+        // Bloquear menú contextual (clic derecho)
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // Bloquear copiar, cortar y pegar
+        document.addEventListener('copy', e => e.preventDefault());
+        document.addEventListener('cut', e => e.preventDefault());
+        document.addEventListener('paste', e => e.preventDefault());
+
+        // Bloquear atajos comunes de DevTools y búsqueda
+        window.addEventListener('keydown', e => {
+          if (
+            e.key === "F12" ||
+            (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c")) ||
+            (e.ctrlKey && (e.key === "U" || e.key === "u" || e.key === "S" || e.key === "s" || e.key === "F" || e.key === "f")) ||
+            (e.metaKey && e.altKey && (e.key === "I" || e.key === "i" || e.key === "J" || e.key === "j" || e.key === "C" || e.key === "c"))
+          ) {
+            e.preventDefault();
+            this.recordViolation("Intento de apertura de DevTools o inspección.");
+          }
+        });
+
+        // Detección de pérdida de foco / cambio de pestaña
+        const handleFocusLoss = () => {
+          if (!this.active) return;
+          this.violationsCount++;
+          if (this.onViolation) {
+            this.onViolation(this.violationsCount);
+          }
+        };
+
+        window.addEventListener('blur', handleFocusLoss);
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            handleFocusLoss();
+          }
+        });
+      }
+
+      recordViolation(reason) {
+        if (!this.active) return;
+        this.violationsCount++;
+        if (this.onViolation) {
+          this.onViolation(this.violationsCount, reason);
+        }
+      }
+    }
+
+    /* =========================================================
+       AUDIO SYNTHESIZER (COMPATIBLE CON APPLE iOS / MAC / PC)
+       ========================================================= */
+    class RetroSoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+        const unlock = () => {
+          this.init();
+          if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+          ['touchstart', 'click'].forEach(evt => document.removeEventListener(evt, unlock));
+        };
+        ['touchstart', 'click'].forEach(evt => document.addEventListener(evt, unlock, { once: false, passive: true }));
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      }
+
+      playTone(freq, type = 'square', duration = 0.1, gainVal = 0.1) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          if (this.ctx.state === 'suspended') this.ctx.resume();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (e) {}
+      }
+
+      playCorrect() {
+        if (this.muted) return;
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          setTimeout(() => this.playTone(f, 'sine', 0.12, 0.12), i * 60);
+        });
+      }
+
+      playWrong() {
+        if (this.muted) return;
+        this.playTone(180, 'sawtooth', 0.25, 0.2);
+        setTimeout(() => this.playTone(130, 'sawtooth', 0.35, 0.2), 100);
+      }
+
+      playClick() { this.playTone(850, 'triangle', 0.03, 0.05); }
+      playBoss() {
+        if (this.muted) return;
+        [160, 140, 120, 220].forEach((f, i) => setTimeout(() => this.playTone(f, 'sawtooth', 0.2, 0.15), i * 80));
+      }
+      playVictory() {
+        if (this.muted) return;
+        [523, 659, 783, 1046, 783, 1046].forEach((f, i) => setTimeout(() => this.playTone(f, 'triangle', 0.22, 0.2), i * 130));
+      }
+    }
+
+    const sound = new RetroSoundEngine();
+
+    /* =========================================================
+       BANCO DE DATOS: 50 PREGUNTAS SOBRE ADVERBIOS DE FRECUENCIA
+       ========================================================= */
+    const MASTER_QUESTIONS = [
+      { id: 1, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "choice", badge: "100% Frequency", prompt: "If Liam goes to the gym 7 days every week without fail, he <span class='prompt-highlight'>_____</span> exercises.", instruction: "Selecciona el adverbio de frecuencia que equivale al 100%:", options: ["always", "sometimes", "rarely", "hardly ever"], correct: 0, rule: "Always = 100% (Siempre)", explanation: "'Always' denota que una acción ocurre el 100% de las veces." },
+      { id: 2, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "choice", badge: "50% Frequency", prompt: "Which adverb represents approximately <span class='prompt-highlight'>50%</span> frequency (half of the time)?", instruction: "Identifica el adverbio para 'a veces':", options: ["sometimes", "never", "seldom", "usually"], correct: 0, rule: "Sometimes = 50% (A veces)", explanation: "'Sometimes' representa un 50% en la escala." },
+      { id: 3, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "binary", badge: "Verdadero o Falso", prompt: "'Seldom' and 'Rarely' both mean approximately 10% frequency (rara vez / casi nunca).", instruction: "¿Es correcta la regla?", correct: true, rule: "Seldom / Rarely = ~10%", explanation: "¡Correcto! Ambos indican una frecuencia baja (~10%)." },
+      { id: 4, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "choice", badge: "Opuestos", prompt: "What is the direct opposite of <span class='prompt-highlight'>'always' (100%)</span>?", instruction: "Elige el opuesto total en la escala:", options: ["never", "frequently", "normally", "often"], correct: 0, rule: "Always (100%) vs Never (0%)", explanation: "El antónimo absoluto de 'always' es 'never' (0%)." },
+      { id: 5, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "choice", badge: "90% Frequency", prompt: "Clara eats vegetables on 6 out of 7 days. She <span class='prompt-highlight'>_____</span> eats healthy.", instruction: "Selecciona el adverbio de alta frecuencia (~90%):", options: ["usually", "never", "seldom", "barely"], correct: 0, rule: "Usually = ~90%", explanation: "'Usually' refleja un hábito casi diario (90%)." },
+      { id: 6, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "choice", badge: "70% Frequency", prompt: "I drink coffee 4 or 5 times a week. I <span class='prompt-highlight'>_____</span> drink coffee.", instruction: "Expresa 'a menudo' o 'frecuentemente':", options: ["often", "hardly ever", "rarely", "never"], correct: 0, rule: "Often = ~70%", explanation: "'Often' indica repetición habitual (~70%)." },
+      { id: 7, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "choice", badge: "Expresión Fija", prompt: "Complete the phrase meaning 'casi nunca' (5%): 'He <span class='prompt-highlight'>_____ ever</span> watches horror movies.'", instruction: "Completa la frase adverbial:", options: ["hardly", "almost", "badly", "slowly"], correct: 0, rule: "Hardly ever = Casi nunca", explanation: "'Hardly ever' significa casi nunca (~5%)." },
+      { id: 8, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "binary", badge: "Verdadero o Falso", prompt: "'Never' indicates that an event happens 15% of the time.", instruction: "¿Es verdadera o falsa la afirmación?", correct: false, rule: "Never = 0%", explanation: "¡Falso! 'Never' representa exactamente el 0%." },
+      { id: 9, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "choice", badge: "Jerarquía", prompt: "Which sequence is correctly ordered from <span class='prompt-highlight'>HIGHEST to LOWEST</span> frequency?", instruction: "Ordena de mayor a menor frecuencia:", options: ["Always ➔ Often ➔ Sometimes ➔ Rarely ➔ Never", "Never ➔ Seldom ➔ Often ➔ Always", "Sometimes ➔ Always ➔ Never ➔ Usually", "Usually ➔ Rarely ➔ Always ➔ Never"], correct: 0, rule: "100% > 70% > 50% > 10% > 0%", explanation: "La secuencia descendente correcta es: Always > Often > Sometimes > Rarely > Never." },
+      { id: 10, stage: 1, worldName: "Mundo 1: El Espectro del Tiempo", type: "choice", badge: "💀 JEFE: CHRONOS", isBoss: true, bossName: "Chronos Titan", prompt: "CHRONOS CHALLENGE: 'Which statement about frequency percentages is 100% TRUE?'", instruction: "Derrótalo con la definición exacta:", options: ["'Occasionally' (~30%) expresses more frequency than 'Seldom' (~10%).", "'Never' means you do something once in a while.", "'Hardly ever' has a higher frequency than 'Usually'.", "'Always' allows for small exceptions every weekend."], correct: 0, rule: "Occasionally (30%) > Seldom (10%)", explanation: "¡Golpe certero! 'Occasionally' supera a 'seldom' en porcentaje." },
+
+      // MUNDO 2 (Q11 - Q20)
+      { id: 11, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "choice", badge: "Posición Estándar", prompt: "Choose the sentence with the <span class='prompt-highlight'>CORRECT word order</span>:", instruction: "Regla: Sujeto + Adverbio + Verbo Principal:", options: ["She always eats breakfast before leaving.", "She eats always breakfast before leaving.", "Always she eats breakfast before leaving.", "She eats breakfast always before leaving."], correct: 0, rule: "Sujeto + Adverbio + Verbo", explanation: "Con verbos de acción, el adverbio va ANTES: 'She always eats'." },
+      { id: 12, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "order", badge: "Runa Sorter", prompt: "Reordena las runas en la posición correcta:", instruction: "Toca las palabras en orden sintáctico:", words: ["We", "often", "visit", "our grandparents", "on Sundays."], correct: "We often visit our grandparents on Sundays.", rule: "We + often + visit", explanation: "'Often' debe ubicarse antes del verbo principal 'visit'." },
+      { id: 13, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "choice", badge: "3ª Persona", prompt: "David <span class='prompt-highlight'>_____ (rarely / play)</span> video games on weekdays.", instruction: "Combina el adverbio con el verbo en 3ª persona (He):", options: ["rarely plays", "plays rarely", "rarely play", "is rarely play"], correct: 0, rule: "Adverbio + Verbo(-s)", explanation: "El adverbio va antes y el verbo lleva '-s': 'David rarely plays'." },
+      { id: 14, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "binary", badge: "Detector de Errores", prompt: "'They go usually to bed at 10 PM.' Is this sentence grammatically correct?", instruction: "¿Está 'usually' en la posición correcta?", correct: false, rule: "Debe ser: 'They usually go...'", explanation: "¡Falso! Debe ser: 'They usually go to bed'." },
+      { id: 15, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "order", badge: "Runa Sorter", prompt: "Ordena los bloques para formar la oración:", instruction: "Arma la frase del gato durmiente:", words: ["My cat", "sometimes", "sleeps", "on the warm laptop."], correct: "My cat sometimes sleeps on the warm laptop.", rule: "My cat + sometimes + sleeps", explanation: "'Sometimes' se coloca antes del verbo 'sleeps'." },
+      { id: 16, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "choice", badge: "Sintaxis con 'Never'", prompt: "Choose the grammatically sound statement:", instruction: "¿Cuál ubica correctamente 'never'?", options: ["I never forget my house keys.", "I forget never my house keys.", "Never I forget my house keys.", "I forget my house keys never."], correct: 0, rule: "I + never + forget", explanation: "Correcto: 'I never forget'. 'Never' va antes del verbo principal." },
+      { id: 17, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "order", badge: "Runa Sorter", prompt: "Ensambla la oración con 'seldom':", instruction: "Ubica 'seldom' antes del verbo:", words: ["They", "seldom", "eat", "fast food", "during the week."], correct: "They seldom eat fast food during the week.", rule: "They + seldom + eat", explanation: "'Seldom' precede al verbo principal 'eat'." },
+      { id: 18, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "choice", badge: "Adverbio Compuesto", prompt: "Emma <span class='prompt-highlight'>_____</span> coffee in the evening.", instruction: "Elige la opción correcta para 'hardly ever':", options: ["hardly ever drinks", "drinks hardly ever", "hardly drinks ever", "ever hardly drinks"], correct: 0, rule: "hardly ever + drinks", explanation: "'Hardly ever' funciona como una sola unidad antes del verbo." },
+      { id: 19, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "binary", badge: "Verdadero o Falso", prompt: "In simple present action verbs, adverbs of frequency usually go AFTER the main verb.", instruction: "¿Es verdadera la afirmación sobre los verbos de acción?", correct: false, rule: "Van ANTES del verbo", explanation: "¡Falso! Van ANTES del verbo de acción (ej. 'always eat')." },
+      { id: 20, stage: 2, worldName: "Mundo 2: Las Praderas del Verbo", type: "choice", badge: "💀 JEFE: LA HIDRA", isBoss: true, bossName: "Action Hydra", prompt: "THE HYDRA DEMANDS: 'Which sentence honors the sacred syntax before my main heads?'", instruction: "Elige la oración perfecta:", options: ["Our team frequently checks the laboratory results.", "Our team checks frequently the laboratory results.", "Frequently our team the laboratory checks results.", "Our team checks the laboratory frequently results."], correct: 0, rule: "frequently + checks", explanation: "¡Golpe certero! 'Frequently' va antes del verbo transitivo 'checks'." },
+
+      // MUNDO 3 (Q21 - Q30)
+      { id: 21, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "choice", badge: "Regla 'To Be'", prompt: "Where does the adverb go with the verb <span class='prompt-highlight'>TO BE</span>? 'He <span class='prompt-highlight'>[is]</span> happy.'", instruction: "Recuerda: con 'to be', el adverbio va DESPUÉS:", options: ["He is always happy.", "He always is happy.", "Always he is happy.", "He is happy always."], correct: 0, rule: "TO BE + Adverbio", explanation: "Con el verbo 'to be', el adverbio va DESPUÉS: 'He is always happy'." },
+      { id: 22, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "choice", badge: "Plural con 'Are'", prompt: "The train tickets <span class='prompt-highlight'>_____</span> expensive during holidays.", instruction: "Selecciona el orden con 'are' y 'usually':", options: ["are usually", "usually are", "are usually be", "usually being"], correct: 0, rule: "are + usually", explanation: "El adverbio 'usually' va inmediatamente tras 'are'." },
+      { id: 23, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "order", badge: "Runa Sorter", prompt: "Construye la oración en el orden de 'TO BE':", instruction: "Ubica 'usually' tras 'am':", words: ["I", "am", "usually", "exhausted", "after a long run."], correct: "I am usually exhausted after a long run.", rule: "am + usually", explanation: "'I am usually...'. 'Usually' sucede a 'am'." },
+      { id: 24, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "binary", badge: "Escudo de Verdad", prompt: "'The weather is always cold in the North Pole.' Is this word order 100% correct?", instruction: "¿Está 'always' después de 'is'?", correct: true, rule: "is + always", explanation: "¡Exacto! Como el verbo es 'is', 'always' va después." },
+      { id: 25, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "choice", badge: "Pasado con 'Was'", prompt: "When I was a child, I <span class='prompt-highlight'>_____</span> afraid of the dark.", instruction: "Aplica la regla con 'was':", options: ["was never", "never was", "was never be", "did never was"], correct: 0, rule: "was + never", explanation: "En pasado también aplica: 'I was never afraid'." },
+      { id: 26, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "order", badge: "Runa Sorter", prompt: "Ordena la oración pacífica:", instruction: "Ubica 'seldom' tras 'are':", words: ["We", "are", "seldom", "angry", "with our neighbors."], correct: "We are seldom angry with our neighbors.", rule: "are + seldom", explanation: "Correcto: 'We are seldom angry...'. 'Seldom' sigue a 'are'." },
+      { id: 27, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "choice", badge: "Oración con 'Are'", prompt: "Choose the correct encouraging phrase:", instruction: "Identifica la opción gramaticalmente correcta:", options: ["You are never alone in this quest.", "You never are alone in this quest.", "Never you are alone in this quest.", "You are alone never in this quest."], correct: 0, rule: "are + never", explanation: "'You are never alone'. 'Never' sigue a 'are'." },
+      { id: 28, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "choice", badge: "Puntualidad", prompt: "Our professor <span class='prompt-highlight'>_____</span> punctual for morning lectures.", instruction: "Elige la posición para 'is' y 'always':", options: ["is always", "always is", "always does be", "is always being"], correct: 0, rule: "is + always", explanation: "'Our professor is always punctual'." },
+      { id: 29, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "binary", badge: "Detector de Trampas", prompt: "'Lucas often is in the library after class.' Is this the standard rule placement?", instruction: "¿Debería 'often' ir antes de 'is'?", correct: false, rule: "Debe ser: 'Lucas is often...'", explanation: "¡Falso! La regla exige: 'Lucas is often in the library'." },
+      { id: 30, stage: 3, worldName: "Mundo 3: El Templo de 'TO BE'", type: "choice", badge: "💀 JEFE: EL FANTASMA", isBoss: true, bossName: "Specter of 'To Be'", prompt: "THE SPECTER DEMANDS: 'Identify the sentence that honors my form!'", instruction: "Elige la estructura correcta con 'TO BE':", options: ["Those ancient library books are rarely available for borrowing.", "Those ancient library books rarely are available for borrowing.", "Those ancient library books are available rarely for borrowing.", "Rarely those ancient library books are available for borrowing."], correct: 0, rule: "are + rarely", explanation: "¡Espectro vencido! 'are rarely available' coloca el adverbio tras 'are'." },
+
+      // MUNDO 4 (Q31 - Q40)
+      { id: 31, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "choice", badge: "Modal 'Can'", prompt: "With the modal verb <span class='prompt-highlight'>'can'</span>, where does 'never' go? 'You _____ tell what will happen.'", instruction: "Regla: Modal + Adverbio + Verbo Principal:", options: ["can never", "never can", "can never to", "never could to"], correct: 0, rule: "can + never + tell", explanation: "El adverbio va entre el modal y el verbo: 'can never tell'." },
+      { id: 32, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "choice", badge: "Present Perfect", prompt: "I have <span class='prompt-highlight'>_____</span> seen such a magnificent castle.", instruction: "Ubica el adverbio entre 'have' y 'seen':", options: ["never", "rare", "hard", "not never"], correct: 0, rule: "have + never + seen", explanation: "En tiempos perfectos: 'I have never seen'." },
+      { id: 33, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "order", badge: "Runa Sorter", prompt: "Ordena las runas del tiempo compuesto:", instruction: "Construye con 'has always wanted':", words: ["She", "has", "always", "wanted", "to study astronomy."], correct: "She has always wanted to study astronomy.", rule: "has + always + wanted", explanation: "'has always wanted': 'always' va entre el auxiliar y el participio." },
+      { id: 34, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "choice", badge: "Negativo con 'Doesn't'", prompt: "Which sentence correctly places 'often' in a <span class='prompt-highlight'>negative</span> statement?", instruction: "Regla: Auxiliar negativo + Adverbio + Verbo:", options: ["He doesn't often wake up before sunrise.", "He often doesn't wake up before sunrise.", "He doesn't wake often up before sunrise.", "He wake doesn't often up before sunrise."], correct: 0, rule: "doesn't + often + wake up", explanation: "El adverbio va tras 'doesn't': 'He doesn't often wake up'." },
+      { id: 35, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "choice", badge: "Interrogación", prompt: "Choose the correct word order for this question:", instruction: "Fórmula: Auxiliar + Sujeto + Adverbio + Verbo:", options: ["Do you usually take the bus to work?", "Usually do you take the bus to work?", "Do usually you take the bus to work?", "Do you take usually the bus to work?"], correct: 0, rule: "Do you usually take...?", explanation: "En preguntas: 'Do you usually take...?'" },
+      { id: 36, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "binary", badge: "Escudo Modal", prompt: "'You must always wear a helmet on a motorbike.' Is the position of 'always' correct?", instruction: "¿Está 'always' entre 'must' y 'wear'?", correct: true, rule: "must + always + wear", explanation: "¡Correcto! 'must always wear' respeta la regla de modales." },
+      { id: 37, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "order", badge: "Runa Sorter", prompt: "Ensambla el mandamiento:", instruction: "Ubica 'always' tras 'should':", words: ["We", "should", "always", "tell", "the truth in court."], correct: "We should always tell the truth in court.", rule: "should + always + tell", explanation: "'We should always tell...'. 'Always' va tras el modal 'should'." },
+      { id: 38, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "choice", badge: "'How often'", prompt: "Complete the inquiry: '<span class='prompt-highlight'>How often _____</span> to the dentist?'", instruction: "Selecciona la estructura interrogativa para 'you':", options: ["do you go", "you do go", "are you go", "does you go"], correct: 0, rule: "How often + do you go?", explanation: "'How often do you go?'. Requiere el auxiliar 'do'." },
+      { id: 39, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "binary", badge: "Significado de 'Ever'", prompt: "In questions like 'Do you ever eat sushi?', 'ever' means 'at any time'.", instruction: "¿Significa 'ever' alguna vez en preguntas?", correct: true, rule: "'Ever' = Alguna vez", explanation: "¡Correcto! 'Ever' se utiliza en preguntas como 'en algún momento'." },
+      { id: 40, stage: 4, worldName: "Mundo 4: Fortaleza Auxiliar y Modal", type: "choice", badge: "💀 JEFE: EL MECA", isBoss: true, bossName: "Auxiliary Mech", prompt: "AUXILIARY MECH: 'Coordinate negative auxiliary and adverb flawlessly!'", instruction: "Desactiva los escudos del Meca:", options: ["They don't usually eat dinner out on Mondays.", "They not usually do eat dinner out on Mondays.", "They don't eat usually dinner out on Mondays.", "They usually don't not eat dinner out on Mondays."], correct: 0, rule: "don't + usually + eat", explanation: "¡Meca sobrecargado! 'They don't usually eat...' es la sintaxis exacta." },
+
+      // MUNDO 5 (Q41 - Q50)
+      { id: 41, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "choice", badge: "Doble Negación", prompt: "Which sentence correctly avoids the <span class='prompt-highlight'>DOUBLE NEGATIVE</span> trap?", instruction: "'Hardly ever' ya es negativo, no uses 'doesn't':", options: ["He hardly ever complains about the weather.", "He doesn't hardly ever complain about the weather.", "He hardly ever doesn't complain about the weather.", "He not hardly ever complains about the weather."], correct: 0, rule: "Sin doble negación", explanation: "'Hardly ever' ya es negativo, el verbo queda afirmativo: 'He hardly ever complains'." },
+      { id: 42, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "binary", badge: "Posición Inicial", prompt: "'Sometimes I walk to school, and sometimes I cycle.' Can 'Sometimes' start a sentence?", instruction: "¿Puede 'Sometimes' colocarse al principio?", correct: true, rule: "Excepción: Sometimes al inicio", explanation: "¡Verdadero! 'Sometimes' y 'Usually' pueden ir al inicio para dar énfasis." },
+      { id: 43, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "choice", badge: "Restricción Final", prompt: "Which adverb sounds <span class='prompt-highlight'>UNNATURAL / INCORRECT</span> at the very end of an English sentence?", instruction: "¿Cuál adverbio NO puede cerrar la oración?", options: ["always", "frequently", "sometimes", "now and then"], correct: 0, rule: "'Always' no va al final", explanation: "'Always' o 'Never' no pueden cerrar oraciones en inglés estándar." },
+      { id: 44, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "choice", badge: "Frecuencia Definida", prompt: "Complete with the adverb of <span class='prompt-highlight'>definite frequency</span>: 'The magazine is published _____.'", instruction: "Selecciona el adverbio que significa 'mensualmente':", options: ["monthly", "month", "monthevery", "oftenly"], correct: 0, rule: "monthly = mensualmente", explanation: "'Monthly' indica periodicidad fija mensual." },
+      { id: 45, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "order", badge: "Runa Sorter", prompt: "Construye la oración iniciando con la excepción 'Sometimes':", instruction: "Empieza por 'Sometimes':", words: ["Sometimes", "it", "rains", "heavily", "in the afternoon."], correct: "Sometimes it rains heavily in the afternoon.", rule: "Sometimes + it + rains", explanation: "'Sometimes' al principio enfatiza lo ocasional." },
+      { id: 46, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "choice", badge: "Adverbios Negativos", prompt: "Which adverb has an <span class='prompt-highlight'>inherently negative</span> meaning and never takes 'not'?", instruction: "Identifica la palabra que prohíbe 'not':", options: ["seldom", "often", "usually", "regularly"], correct: 0, rule: "Seldom es negativo intrínseco", explanation: "'Seldom' significa casi nunca y funciona como negación por sí solo." },
+      { id: 47, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "binary", badge: "Escudo Anti-Error", prompt: "'My sister doesn't never watch cartoon channels.' Is this standard English?", instruction: "¿Es correcta la frase 'doesn't never'?", correct: false, rule: "Doble negación prohibida", explanation: "¡Falso! Debe ser: 'My sister never watches...'." },
+      { id: 48, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "choice", badge: "Ubicación de 'Daily'", prompt: "Where does the definite frequency adverb <span class='prompt-highlight'>'daily'</span> usually sit?", instruction: "¿Dónde se ubica 'daily' (a diario)?", options: ["At the end of the sentence (e.g., 'We check the news daily.')", "Always before the subject (e.g., 'Daily we check...')", "Between the subject and verb (e.g., 'We daily check...')", "Directly attached to the object"], correct: 0, rule: "Frecuencia definida va al final", explanation: "Expresiones como 'daily', 'every day' van naturalmente al final." },
+      { id: 49, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "order", badge: "Runa Sorter", prompt: "Construye la pregunta completa de frecuencia:", instruction: "Ordena los bloques interrogativos:", words: ["How often", "does", "she", "practice", "the piano?"], correct: "How often does she practice the piano?", rule: "How often + does + she + practice?", explanation: "'How often' + auxiliar 'does' + sujeto 'she' + verbo 'practice'." },
+      { id: 50, stage: 5, worldName: "Mundo 5: Las Pruebas del Maestro", type: "choice", badge: "👑 JEFE FINAL: LORD TEMPORAL", isBoss: true, bossName: "Lord Temporal", prompt: "LORD TEMPORAL CHALLENGES: 'Which sentence combines multiple frequency rules with ZERO flaws?'", instruction: "¡Responde la prueba definitiva de las 50 misiones!", options: ["Although she is usually busy, she never forgets her promises.", "Although she usually is busy, she forgets never her promises.", "Although she is busy usually, she doesn't never forget her promises.", "Although usually she is busy, she forgets always her promises."], correct: 0, rule: "is usually (To Be) + never forgets (Verbo)", explanation: "¡¡VICTORIA ÉPICA!! 'is usually' (To Be) y 'never forgets' (Verbo) siguen las dos reglas principales sin doble negación." }
+    ];
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    /* =========================================================
+       MOTOR DE CONTROL DEL JUEGO Y BLOQUEO LOCALSTORAGE
+       ========================================================= */
+    class ExamGameApp {
+      constructor() {
+        this.studentName = "";
+        this.studentGrade = "";
+        this.questions = [];
+        this.currentIndex = 0;
+        this.lives = 3;
+        this.maxLives = 3;
+        this.score = 0;
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.correctAnswersCount = 0;
+        this.answered = false;
+        this.orderSlots = [];
+        this.availableChips = [];
+
+        // Sistema Anti-Copia
+        this.antiCheat = new AntiCheatSystem((count, reason) => {
+          sound.playWrong();
+          alert(`⚠️ ADVERTENCIA ANTI-COPIA (${count} detectada):\nHas cambiado de ventana o intentado una acción restringida.\nEsta infracción quedará registrada en el informe enviado al profesor.`);
+        });
+
+        this.cacheDOM();
+        this.initEvents();
+        this.checkInitialLockout();
+      }
+
+      cacheDOM() {
+        this.screenReg = document.getElementById("registrationScreen");
+        this.screenLock = document.getElementById("lockoutScreen");
+        this.screenGame = document.getElementById("gamePlayContainer");
+        this.screenVictory = document.getElementById("victoryScreen");
+
+        this.inputName = document.getElementById("inputStudentName");
+        this.inputGrade = document.getElementById("inputStudentGrade");
+        this.btnStart = document.getElementById("btnStartExam");
+        this.inputPin = document.getElementById("inputTeacherPin");
+        this.btnUnblock = document.getElementById("btnUnblockPin");
+
+        this.hudStudent = document.getElementById("hudStudentName");
+        this.hudHeroName = document.getElementById("heroDisplayName");
+        this.elPrompt = document.getElementById("questionPrompt");
+        this.elInstruction = document.getElementById("questionInstruction");
+        this.elInteractiveZone = document.getElementById("interactiveZone");
+        this.elBadge = document.getElementById("questionTypeBadge");
+        this.elStageLabel = document.getElementById("stageLabel");
+        this.elQuestCounter = document.getElementById("questCounter");
+        this.elProgressFill = document.getElementById("progressFill");
+        this.elScore = document.getElementById("scoreDisplay");
+        this.elComboContainer = document.getElementById("comboContainer");
+        this.elCombo = document.getElementById("comboDisplay");
+        this.elHearts = document.getElementById("heartsContainer");
+        this.elEnemyName = document.getElementById("enemyName");
+        this.elEnemyHpBar = document.getElementById("enemyHpBar");
+        this.elFeedbackBanner = document.getElementById("feedbackBanner");
+        this.elFeedbackTitle = document.getElementById("feedbackTitle");
+        this.elFeedbackRule = document.getElementById("feedbackRulePill");
+        this.elFeedbackText = document.getElementById("feedbackExplanation");
+        this.elBtnNext = document.getElementById("btnNextQuest");
+      }
+
+      initEvents() {
+        this.btnStart.addEventListener("click", () => this.handleStartRegistration());
+        this.btnUnblock.addEventListener("click", () => this.handleTeacherUnblock());
+        this.elBtnNext.addEventListener("click", () => this.nextQuestion());
+
+        document.getElementById("btnSoundToggle").addEventListener("click", () => {
+          sound.muted = !sound.muted;
+          document.getElementById("soundIcon").textContent = sound.muted ? "🔇" : "🔊";
+        });
+
+        document.getElementById("btnOpenCodex").addEventListener("click", () => {
+          sound.playClick();
+          document.getElementById("modalCodex").style.display = "flex";
+        });
+
+        // Teclado rápido
+        window.addEventListener("keydown", (e) => {
+          if (this.answered) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              this.nextQuestion();
+            }
+            return;
+          }
+          const q = this.questions[this.currentIndex];
+          if (q && q.type === "choice") {
+            const num = parseInt(e.key);
+            if (num >= 1 && num <= q.options.length) {
+              this.handleChoiceAnswer(num - 1);
+            }
+          }
+        });
+      }
+
+      /* Verificación de Bloqueo Previo */
+      checkInitialLockout() {
+        const isLocked = localStorage.getItem("ADVERBS_EXAM_LOCKED");
+        if (isLocked === "true") {
+          const studentInfo = localStorage.getItem("ADVERBS_EXAM_STUDENT") || "Un estudiante";
+          const scoreInfo = localStorage.getItem("ADVERBS_EXAM_SCORE") || "";
+          document.getElementById("lockoutInfoText").innerHTML = `
+            El examen ya fue rendido por <strong>${studentInfo}</strong> (${scoreInfo}).<br>
+            El sistema se encuentra <strong>BLOQUEADO</strong> para evitar repeticiones fraudulentas.<br>
+            Solicita al docente ingresar el PIN <strong>${TEACHER_UNLOCK_PIN}</strong> para habilitar una nueva prueba.
+          `;
+          this.screenReg.style.display = "none";
+          this.screenGame.style.display = "none";
+          this.screenVictory.style.display = "none";
+          this.screenLock.style.display = "flex";
+        }
+      }
+
+      handleTeacherUnblock() {
+        const enteredPin = this.inputPin.value.trim();
+        if (enteredPin === TEACHER_UNLOCK_PIN) {
+          localStorage.removeItem("ADVERBS_EXAM_LOCKED");
+          localStorage.removeItem("ADVERBS_EXAM_STUDENT");
+          localStorage.removeItem("ADVERBS_EXAM_SCORE");
+          sound.playCorrect();
+          alert("✅ PIN Correcto: Examen desbloqueado con éxito. Ahora un nuevo estudiante puede ingresar.");
+          location.reload();
+        } else {
+          sound.playWrong();
+          alert("❌ PIN Incorrecto. Acceso denegado.");
+          this.inputPin.value = "";
+          this.inputPin.focus();
+        }
+      }
+
+      handleStartRegistration() {
+        const name = this.inputName.value.trim();
+        const grade = this.inputGrade.value.trim();
+
+        if (name.length < 3) {
+          alert("Por favor ingresa tu Nombre y Apellido completo para iniciar la evaluación.");
+          this.inputName.focus();
+          return;
+        }
+
+        this.studentName = name;
+        this.studentGrade = grade || "No especificado";
+        this.hudStudent.textContent = this.studentName;
+        this.hudHeroName.textContent = this.studentName.split(" ")[0];
+
+        sound.playClick();
+        this.screenReg.style.display = "none";
+        this.screenGame.style.display = "flex";
+
+        // Inicia el monitoreo Anti-Copia
+        this.antiCheat.start();
+
+        // Baraja preguntas y opciones
+        this.prepareRandomSession();
+      }
+
+      prepareRandomSession() {
+        const rawClones = MASTER_QUESTIONS.map(q => JSON.parse(JSON.stringify(q)));
+        const shuffledList = shuffleArray(rawClones);
+
+        shuffledList.forEach(q => {
+          if (q.type === "choice" && q.options) {
+            const correctText = q.options[q.correct];
+            q.options = shuffleArray(q.options);
+            q.correct = q.options.indexOf(correctText);
+          }
+        });
+
+        this.questions = shuffledList;
+        this.currentIndex = 0;
+        this.renderQuestion();
+      }
+
+      renderQuestion() {
+        const q = this.questions[this.currentIndex];
+        this.answered = false;
+        this.orderSlots = [];
+
+        this.elFeedbackBanner.style.display = "none";
+        this.elBtnNext.style.display = "none";
+
+        this.elStageLabel.textContent = q.worldName.toUpperCase();
+        this.elQuestCounter.textContent = `Nivel ${this.currentIndex + 1} / ${this.questions.length}`;
+        const pct = ((this.currentIndex + 1) / this.questions.length) * 100;
+        this.elProgressFill.style.width = `${pct}%`;
+
+        this.elBadge.className = q.isBoss ? "stage-pill boss-pill" : "stage-pill";
+        this.elBadge.textContent = q.isBoss ? `🔥 ${q.badge}` : `⚔️ ${q.badge}`;
+
+        this.elPrompt.innerHTML = q.prompt;
+        this.elInstruction.textContent = q.instruction;
+
+        if (q.isBoss) {
+          sound.playBoss();
+          this.elEnemyName.textContent = q.bossName;
+        } else {
+          this.elEnemyName.textContent = `Sprite #${q.id}`;
+        }
+        this.elEnemyHpBar.style.width = "100%";
+
+        this.elInteractiveZone.innerHTML = "";
+
+        if (q.type === "choice") {
+          this.renderChoiceQuestion(q);
+        } else if (q.type === "order") {
+          this.renderOrderQuestion(q);
+        } else if (q.type === "binary") {
+          this.renderBinaryQuestion(q);
+        }
+      }
+
+      renderChoiceQuestion(q) {
+        const grid = document.createElement("div");
+        grid.className = "options-grid";
+        q.options.forEach((opt, idx) => {
+          const btn = document.createElement("button");
+          btn.className = "btn-option";
+          btn.innerHTML = `<span class="key-badge">${idx + 1}</span> <span>${opt}</span>`;
+          btn.onclick = () => this.handleChoiceAnswer(idx);
+          grid.appendChild(btn);
+        });
+        this.elInteractiveZone.appendChild(grid);
+      }
+
+      renderOrderQuestion(q) {
+        const area = document.createElement("div");
+        area.className = "word-scramble-area";
+
+        const slotBox = document.createElement("div");
+        slotBox.className = "sentence-slots";
+        slotBox.id = "slotsBox";
+
+        const poolBox = document.createElement("div");
+        poolBox.className = "word-pool";
+        poolBox.id = "poolBox";
+
+        const shuffledWords = shuffleArray(q.words);
+        this.availableChips = shuffledWords.map((w, id) => ({ text: w, id: id, used: false }));
+
+        this.updateOrderUI(slotBox, poolBox, q);
+
+        const actions = document.createElement("div");
+        actions.className = "scramble-actions";
+
+        const btnReset = document.createElement("button");
+        btnReset.className = "btn-action";
+        btnReset.textContent = "↺ Reiniciar";
+        btnReset.onclick = () => {
+          sound.playClick();
+          this.orderSlots = [];
+          this.availableChips.forEach(c => c.used = false);
+          this.updateOrderUI(slotBox, poolBox, q);
+        };
+
+        const btnCheck = document.createElement("button");
+        btnCheck.className = "btn-action primary";
+        btnCheck.textContent = "⚡ Lanzar Conjuro";
+        btnCheck.onclick = () => this.handleOrderSubmit(q);
+
+        actions.appendChild(btnReset);
+        actions.appendChild(btnCheck);
+
+        area.appendChild(slotBox);
+        area.appendChild(poolBox);
+        area.appendChild(actions);
+
+        this.elInteractiveZone.appendChild(area);
+      }
+
+      updateOrderUI(slotBox, poolBox, q) {
+        slotBox.innerHTML = "";
+        if (this.orderSlots.length === 0) {
+          slotBox.innerHTML = "<span style='color: #4a5a96; font-style: italic; font-size: 0.9rem;'>Toca las palabras para ordenar la oración...</span>";
+        } else {
+          this.orderSlots.forEach((chip, sIdx) => {
+            const chipEl = document.createElement("button");
+            chipEl.className = "word-chip in-slot";
+            chipEl.textContent = chip.text;
+            chipEl.onclick = () => {
+              if (this.answered) return;
+              sound.playClick();
+              this.orderSlots.splice(sIdx, 1);
+              chip.used = false;
+              this.updateOrderUI(slotBox, poolBox, q);
+            };
+            slotBox.appendChild(chipEl);
+          });
+        }
+
+        poolBox.innerHTML = "";
+        this.availableChips.forEach((chip) => {
+          if (!chip.used) {
+            const chipEl = document.createElement("button");
+            chipEl.className = "word-chip";
+            chipEl.textContent = chip.text;
+            chipEl.onclick = () => {
+              if (this.answered) return;
+              sound.playClick();
+              chip.used = true;
+              this.orderSlots.push(chip);
+              this.updateOrderUI(slotBox, poolBox, q);
+            };
+            poolBox.appendChild(chipEl);
+          }
+        });
+      }
+
+      renderBinaryQuestion(q) {
+        const grid = document.createElement("div");
+        grid.className = "binary-grid";
+
+        const btnTrue = document.createElement("button");
+        btnTrue.className = "btn-binary btn-true";
+        btnTrue.innerHTML = "<span>🛡️ VERDADERO</span><span style='font-size:0.85rem;'>(Correct)</span>";
+        btnTrue.onclick = () => this.handleBinaryAnswer(true);
+
+        const btnFalse = document.createElement("button");
+        btnFalse.className = "btn-binary btn-false";
+        btnFalse.innerHTML = "<span>⚔️ FALSO</span><span style='font-size:0.85rem;'>(Incorrect)</span>";
+        btnFalse.onclick = () => this.handleBinaryAnswer(false);
+
+        grid.appendChild(btnTrue);
+        grid.appendChild(btnFalse);
+        this.elInteractiveZone.appendChild(grid);
+      }
+
+      handleChoiceAnswer(selectedIdx) {
+        if (this.answered) return;
+        this.answered = true;
+        const q = this.questions[this.currentIndex];
+        const isCorrect = (selectedIdx === q.correct);
+
+        const btns = this.elInteractiveZone.querySelectorAll(".btn-option");
+        btns.forEach((b, idx) => {
+          b.disabled = true;
+          if (idx === q.correct) {
+            b.style.borderColor = "var(--success)";
+            b.style.background = "rgba(0, 255, 136, 0.25)";
+          } else if (idx === selectedIdx) {
+            b.style.borderColor = "var(--danger)";
+            b.style.background = "rgba(255, 51, 102, 0.25)";
+          }
+        });
+
+        this.processResult(isCorrect, q);
+      }
+
+      handleOrderSubmit(q) {
+        if (this.answered || this.orderSlots.length === 0) return;
+        this.answered = true;
+
+        const assembled = this.orderSlots.map(c => c.text).join(" ");
+        const isCorrect = (assembled.trim() === q.correct.trim());
+
+        this.processResult(isCorrect, q);
+      }
+
+      handleBinaryAnswer(userAnswer) {
+        if (this.answered) return;
+        this.answered = true;
+        const q = this.questions[this.currentIndex];
+        const isCorrect = (userAnswer === q.correct);
+
+        const btns = this.elInteractiveZone.querySelectorAll(".btn-binary");
+        btns.forEach(b => b.disabled = true);
+
+        this.processResult(isCorrect, q);
+      }
+
+      processResult(isCorrect, q) {
+        if (isCorrect) {
+          sound.playCorrect();
+          this.correctAnswersCount++;
+          this.combo++;
+          if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+          const points = 100 + (this.combo * 25);
+          this.score += points;
+          this.elScore.textContent = `SCORE: ${String(this.score).padStart(4, '0')}`;
+
+          if (this.combo >= 2) {
+            this.elComboContainer.style.display = "flex";
+            this.elCombo.textContent = `COMBO x${this.combo} 🔥`;
+          }
+
+          this.elEnemyHpBar.style.width = "0%";
+          document.getElementById("enemyAvatar").style.transform = "scale(0.85)";
+          setTimeout(() => document.getElementById("enemyAvatar").style.transform = "scale(1)", 300);
+
+          this.elFeedbackBanner.className = "feedback-banner feedback-correct";
+          this.elFeedbackTitle.textContent = q.isBoss ? "💥 ¡JEFE DERROTADO!" : "✨ ¡IMPACTO CRÍTICO!";
+          this.elFeedbackRule.textContent = `REGLA: ${q.rule}`;
+          this.elFeedbackText.textContent = q.explanation;
+        } else {
+          sound.playWrong();
+          this.combo = 0;
+          this.elComboContainer.style.display = "none";
+          this.lives--;
+          this.updateHearts();
+
+          this.elFeedbackBanner.className = "feedback-banner feedback-wrong";
+          this.elFeedbackTitle.textContent = "⚠️ DAÑO RECIBIDO (-1 HP)";
+          this.elFeedbackRule.textContent = `REGLA: ${q.rule}`;
+          this.elFeedbackText.textContent = q.explanation;
+        }
+
+        this.elFeedbackBanner.style.display = "block";
+        this.elBtnNext.style.display = "inline-flex";
+      }
+
+      updateHearts() {
+        if (this.lives <= 0) this.lives = 1;
+        let heartsHtml = "";
+        for (let i = 0; i < this.maxLives; i++) {
+          heartsHtml += (i < this.lives) ? "<span class='heart-icon'>❤️</span>" : "<span style='opacity:0.25;'>🖤</span>";
+        }
+        this.elHearts.innerHTML = heartsHtml;
+      }
+
+      nextQuestion() {
+        sound.playClick();
+        if (this.currentIndex < this.questions.length - 1) {
+          this.currentIndex++;
+          this.renderQuestion();
+        } else {
+          this.finishAndLockExam();
+        }
+      }
+
+      /* Conclusión, Reporte por Web3Forms y Bloqueo Permanente */
+      finishAndLockExam() {
+        this.antiCheat.stop();
+        sound.playVictory();
+
+        this.screenGame.style.display = "none";
+        this.screenVictory.style.display = "flex";
+
+        let rank = "RANGO B: APRENDIZ DE LA FRECUENCIA";
+        if (this.score >= 8000) rank = "👑 RANGO S+: MAESTRO SUPREMO DEL TIEMPO";
+        else if (this.score >= 5000) rank = "⚔️ RANGO S: PALADÍN DE LA SINTAXIS";
+        else if (this.score >= 3500) rank = "🛡️ RANGO A: GUERRERO TEMPORAL";
+
+        document.getElementById("finalStudentGreeting").textContent = `Estudiante: ${this.studentName} (${this.studentGrade})`;
+        document.getElementById("finalRankBadge").textContent = rank;
+        document.getElementById("finalScoreDisplay").textContent = `Puntos: ${this.score} | Aciertos: ${this.correctAnswersCount}/50 | Infracciones: ${this.antiCheat.violationsCount}`;
+
+        // BLOQUEAR EN LOCALSTORAGE PARA SIEMPRE
+        localStorage.setItem("ADVERBS_EXAM_LOCKED", "true");
+        localStorage.setItem("ADVERBS_EXAM_STUDENT", `${this.studentName} [${this.studentGrade}]`);
+        localStorage.setItem("ADVERBS_EXAM_SCORE", `${this.score} pts - ${rank}`);
+
+        // Enviar Reporte a Web3Forms
+        this.sendWeb3FormsReport(rank);
+      }
+
+      async sendWeb3FormsReport(rank) {
+        const statusBox = document.getElementById("reportStatusBox");
+
+        if (WEB3FORMS_ACCESS_KEY === "TU-ACCESS-KEY-AQUI" || !WEB3FORMS_ACCESS_KEY) {
+          statusBox.innerHTML = `
+            ⚠️ <strong>Modo Demo / Sin Key:</strong> La evaluación concluyó con éxito y quedó bloqueada.<br>
+            (Para recibir correos con las notas, coloca tu Access Key de Web3Forms en el código).
+          `;
+          return;
+        }
+
+        statusBox.innerHTML = "⏳ Enviando reporte oficial de calificaciones al profesor...";
+
+        const payload = {
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `📋 Reporte de Evaluación: ${this.studentName} - ${rank}`,
+          from_name: "Evaluador de Adverbios de Frecuencia",
+          Estudiante: this.studentName,
+          Curso: this.studentGrade,
+          Rango_Obtenido: rank,
+          Puntuacion_Final: `${this.score} pts`,
+          Aciertos: `${this.correctAnswersCount} de 50 preguntas`,
+          Porcentaje_Acierto: `${Math.round((this.correctAnswersCount / 50) * 100)}%`,
+          Racha_Maxima_Combo: `x${this.maxCombo}`,
+          Infracciones_AntiCopia_CambioPestana: `${this.antiCheat.violationsCount} incidentes registrados`,
+          Fecha_Hora: new Date().toLocaleString()
+        };
+
+        try {
+          const res = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.success) {
+            statusBox.style.color = "var(--success)";
+            statusBox.style.borderColor = "var(--success)";
+            statusBox.innerHTML = "✅ <strong>¡Reporte enviado exitosamente al correo del profesor!</strong>";
+          } else {
+            statusBox.style.color = "var(--warning)";
+            statusBox.innerHTML = `⚠️ No se pudo enviar el correo: ${json.message || 'Verifica tu Access Key'}.`;
+          }
+        } catch (err) {
+          statusBox.style.color = "var(--danger)";
+          statusBox.innerHTML = "⚠️ Error de red al intentar contactar con Web3Forms.";
+        }
+      }
+
+      closeModals() {
+        sound.playClick();
+        document.querySelectorAll(".modal-overlay").forEach(m => m.style.display = "none");
+      }
+    }
+
+    // Inicializar el sistema
+    const game = new ExamGameApp();
+  </script>
+</body>
+</html>
